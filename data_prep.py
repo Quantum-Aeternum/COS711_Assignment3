@@ -134,3 +134,10 @@ print('Splitted data into training and validation sets')
 
 training_set, validation_set = normalise_data(training_set, validation_set)
 print('Normalised data sets')
+
+'''Save all four data sets'''
+training_set.to_csv(r'training_set.csv', index=False)
+training_labels.to_csv(r'training_labels.csv', index=False)
+validation_set.to_csv(r'validation_set.csv', index=False)
+validation_labels.to_csv(r'validation_labels.csv', index=False)
+print('Saved data sets')
