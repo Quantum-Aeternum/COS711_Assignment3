@@ -22,11 +22,13 @@ np.random.seed(GLOBAL_SEED)
 def remove_nan_col(_row, _col_name):
     _string_arr = (_row[_col_name]).split(',')
     _num_NaN = _string_arr.count('nan')
+
     if (_num_NaN == 0):
         return True
     if (_num_NaN / len(_string_arr)) > MAX_NAN_PERC:
         _row[_col_name] = _row[_col_name].replace('nan', '0')
         return False
+
     _float_arr = []
     for i in range(len(_string_arr)):
         if _string_arr[i] != 'nan':
@@ -66,10 +68,28 @@ def split_data(_set):
     return _train, _train_labels, _validation, _validation_labels
 
 
+# Create columns for each recorded hour
+# Removes old string array columns
+# Returns a data set where all the cells are single values
+def flatten_data(_set):
+    _flattened_set = _set.copy()
+    _col_names = ['temp', 'precip', 'rel_humidity', 'wind_dir', 'wind_spd', 'atmos_press']
+    for i in range(len(_col_names)):
+        tmp = _flattened_set[_col_names[i]].str.split(",", expand = True)
+        for j in range(len(tmp.columns)):
+            _flattened_set[_col_names[i] + '_' + str(j)] = pd.to_numeric(tmp[j], downcast='float')
+        _flattened_set.drop(_col_names[i], axis = 1, inplace = True) 
+    return _flattened_set
+
+
 # Normalises the training and validation sets (between 0 and 1)
 # Based on the training data min and max statistics
 # Returns normalised training set, normalised validation set
 def normalise_data(_training_set, _validation_set):
+    train_stats = _training_set.describe()    
+    train_stats = train_stats.transpose()
+    _training_set = (_training_set - train_stats['min']) / (train_stats['max'] - train_stats['min'])
+    _validation_set = (_validation_set - train_stats['min']) / (train_stats['max'] - train_stats['min'])
     return _training_set, _validation_set
 
 
@@ -103,9 +123,13 @@ def normalise_data(_training_set, _validation_set):
 
 '''Load data set previously created by the code above'''
 combined_data = pd.read_csv('preprocessed_data.csv')
-print('Loaded preprocessed data')
+combined_data.drop('ID', axis = 1, inplace = True)
+print('Loaded preprocessead data')
 
-training_set, training_labels, validation_set, validation_labels = split_data(combined_data)
+flat_data = flatten_data(combined_data)
+print('Flattened preprocessed data')
+
+training_set, training_labels, validation_set, validation_labels = split_data(flat_data)
 print('Splitted data into training and validation sets')
 
 training_set, validation_set = normalise_data(training_set, validation_set)
