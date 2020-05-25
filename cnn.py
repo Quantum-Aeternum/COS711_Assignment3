@@ -20,9 +20,9 @@ def row_to_2d(_row, _num_elems, _basic_cols, _special_cols):
     for i in range(_num_elems):
         inner = []
         for j in range(len(_basic_cols)):
-            inner.append(_row[_basic_cols[j]])
+            inner.append([_row[_basic_cols[j]]])
         for j in range(len(_special_cols)):
-            inner.append(_row[_special_cols[j] + '_' + str(i)])
+            inner.append([_row[_special_cols[j] + '_' + str(i)]])
         outer.append(inner)
     return outer
 
@@ -51,7 +51,7 @@ class CNN:
     def __init__(
             self, training_set, training_labels, validation_set, validation_labels,
             optimiser='adam', loss='mae',
-            metrics=['mae'], epochs=10, activation_func='relu'
+            metrics=['mae'], epochs=300, activation_func='relu'
     ):
         self.training_set = training_set
         self.training_labels = training_labels
@@ -72,11 +72,11 @@ class CNN:
         width = len(self.training_set[0][0])
 
         '''Add the convolutional base of the network'''
-        self.model.add(layers.Conv2D(32, (3, 3), activation=self.activation_func, input_shape=(height, width, 1)))
+        self.model.add(layers.Conv2D(32, (1, 4), activation=self.activation_func, input_shape=(height, width, 1)))
         self.model.add(layers.MaxPooling2D((2, 2)))
-        self.model.add(layers.Conv2D(64, (3, 3), activation=self.activation_func))
+        self.model.add(layers.Conv2D(64, (4, 1), activation=self.activation_func))
         self.model.add(layers.MaxPooling2D((2, 2)))
-        self.model.add(layers.Conv2D(64, (3, 3), activation=self.activation_func))
+        self.model.add(layers.Conv2D(64, (4, 4), activation=self.activation_func))
 
         '''Add dense part of the network'''
         self.model.add(layers.Flatten())
@@ -112,7 +112,7 @@ class CNN:
 raw_training_labels = pd.read_csv('training_labels.csv')
 #raw_validation_set = pd.read_csv('validation_set.csv')
 raw_validation_labels = pd.read_csv('validation_labels.csv')
-#print('Loaded data sets')
+print('Loaded data sets')
 
 '''Transform data sets into CNN usable data sets'''
 #training_set = set_to_list(raw_training_set)
