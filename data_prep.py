@@ -93,33 +93,35 @@ def normalise_data(_training_set, _validation_set):
     return _training_set, _validation_set
 
 
-#'''Load training data'''
-#raw_data = pd.read_csv('Train.csv')
-#print('Loaded training data')
+'''Load training data'''
+raw_data = pd.read_csv('Train.csv')
+print('Loaded training data')
 
-#'''Load meta data'''
-#meta_data = pd.read_csv('airqo_metadata.csv', index_col=0)
-#print('Loaded meta data')
+'''Load meta data'''
+meta_data = pd.read_csv('airqo_metadata.csv', index_col=0)
+print('Loaded meta data')
 
-#'''Put default values in for NaN (based on minimum requirement for the NaN)'''
-#meta_data['dist_motorway'] = meta_data['dist_motorway'].fillna(5000)
-#meta_data['dist_trunk'] = meta_data['dist_trunk'].fillna(5000)
-#meta_data['dist_primary'] = meta_data['dist_primary'].fillna(5000)
-#meta_data['dist_secondary'] = meta_data['dist_secondary'].fillna(5000)
-#meta_data['dist_tertiary'] = meta_data['dist_tertiary'].fillna(5000)
-#meta_data['dist_unclassified'] = meta_data['dist_unclassified'].fillna(5000)
-#meta_data['dist_residential'] = meta_data['dist_residential'].fillna(5000)
+'''Put default values in for NaN (based on minimum requirement for the NaN)'''
+meta_data['dist_trunk'] = meta_data['dist_trunk'].fillna(5000)
+meta_data['dist_primary'] = meta_data['dist_primary'].fillna(5000)
+meta_data['dist_secondary'] = meta_data['dist_secondary'].fillna(5000)
+meta_data['dist_tertiary'] = meta_data['dist_tertiary'].fillna(5000)
+meta_data['dist_unclassified'] = meta_data['dist_unclassified'].fillna(5000)
+meta_data['dist_residential'] = meta_data['dist_residential'].fillna(5000)
 
-#'''Remove NaN rows using statistical method'''
-#no_nan_data = remove_nan(raw_data)
-#print('Removed NaNs')
+'''Drop dist_motorway since all are NaN'''
+meta_data.drop('dist_motorway', axis=1, inplace=True)
 
-#'''Replace the data location with its meta data'''
-#combined_data = pd.merge(no_nan_data, meta_data, on='location')
-#combined_data.pop('location')
-#print('Combined data with meta data')
+'''Remove NaN rows using statistical method'''
+no_nan_data = remove_nan(raw_data)
+print('Removed NaNs')
 
-#combined_data.to_csv(r'preprocessed_data.csv', index=False)
+'''Replace the data location with its meta data'''
+combined_data = pd.merge(no_nan_data, meta_data, on='location')
+combined_data.pop('location')
+print('Combined data with meta data')
+
+combined_data.to_csv(r'preprocessed_data.csv', index=False)
 
 '''Load data set previously created by the code above'''
 combined_data = pd.read_csv('preprocessed_data.csv')

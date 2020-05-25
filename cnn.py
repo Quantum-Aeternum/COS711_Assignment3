@@ -50,7 +50,7 @@ def set_to_list(_set):
 class CNN:
     def __init__(
             self, training_set, training_labels, validation_set, validation_labels,
-            optimiser='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            optimiser='adam', loss='mae',
             metrics=['mae'], epochs=10, activation_func='relu'
     ):
         self.training_set = training_set
@@ -100,7 +100,8 @@ class CNN:
                 self.training_set,
                 self.training_labels,
                 epochs=self.epochs,
-                validation_data=(self.validation_set, self.validation_labels)
+                validation_data=(self.validation_set, self.validation_labels),
+                verbose=1
             )
             return history
         return None
@@ -128,13 +129,13 @@ raw_validation_labels = pd.read_csv('validation_labels.csv')
 '''Load data set previously created by the code above'''
 print('Loading data')
 with open("training_set.list", "rb") as fp:
-    training_set = pickle.load(fp)
+    training_set = np.array(pickle.load(fp))
 with open("validation_set.list", "rb") as fp:
-    validation_set = pickle.load(fp)
+    validation_set = np.array(pickle.load(fp))
 print('Loaded data')
 
 '''Create and train the CNN'''
-airqo_cnn = CNN(training_set, raw_training_labels.values.flatten(), validation_set, raw_validation_labels.values.flatten())
+airqo_cnn = CNN(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
 airqo_cnn.build_architecture()
 airqo_cnn.compile_model()
 print('Created CNN')
