@@ -3,7 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+from tensorflow import keras
+from tensorflow.keras import layers, models
 
 '''Global variables and parameters'''
 GLOBAL_SEED = 27182818
@@ -51,7 +52,7 @@ class CNN:
     def __init__(
             self, training_set, training_labels, validation_set, validation_labels,
             optimiser='adam', loss='mae',
-            metrics=['mae'], epochs=300, activation_func='relu'
+            metrics=['mae'], epochs=200, activation_func='relu'
     ):
         self.training_set = training_set
         self.training_labels = training_labels
@@ -72,15 +73,17 @@ class CNN:
         width = len(self.training_set[0][0])
 
         '''Add the convolutional base of the network'''
-        self.model.add(layers.Conv2D(32, (1, 4), activation=self.activation_func, input_shape=(height, width, 1)))
-        self.model.add(layers.MaxPooling2D((2, 2)))
-        self.model.add(layers.Conv2D(64, (4, 1), activation=self.activation_func))
+        self.model.add(tf.keras.layers.ZeroPadding2D(padding=(6, 4), input_shape=(height, width, 1)))
+        self.model.add(layers.Conv2D(32, (6, 4), activation=self.activation_func))
         self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Conv2D(64, (4, 4), activation=self.activation_func))
+        self.model.add(layers.MaxPooling2D((2, 2)))
+        self.model.add(layers.Conv2D(64, (2, 2), activation=self.activation_func))
 
         '''Add dense part of the network'''
         self.model.add(layers.Flatten())
-        self.model.add(layers.Dense(64, activation=self.activation_func))
+        self.model.add(layers.Dense(128, activation=self.activation_func))
+        self.model.add(layers.Dense(32, activation=self.activation_func))
         self.model.add(layers.Dense(1))
 
     # Compiles the model of the CNN if it exists
@@ -95,14 +98,17 @@ class CNN:
     # Trains the model of the CNN if it exists
     # Returns the training history (or None if model does not exist)
     def train_model(self):
+        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=self.epochs//20, verbose=0, mode='auto')
+        #best_model = keras.callbacks.ModelCheck(filepath='best_model.model', monitor='val_loss', save_best_only=True)
         if self.model is not None:
             history = self.model.fit(
                 self.training_set,
                 self.training_labels,
                 epochs=self.epochs,
                 validation_data=(self.validation_set, self.validation_labels),
-                verbose=1
+                verbose=1, callbacks=[early_stopping]#, best_model]
             )
+            #self.model.load_weights('best_model.model')
             return history
         return None
 
@@ -134,6 +140,9 @@ with open("validation_set.list", "rb") as fp:
     validation_set = np.array(pickle.load(fp))
 print('Loaded data')
 
+print(training_set.shape)
+print(raw_training_labels.to_numpy().shape)
+
 '''Create and train the CNN'''
 airqo_cnn = CNN(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
 airqo_cnn.build_architecture()
@@ -143,9 +152,14 @@ history = airqo_cnn.train_model()
 print('Trained CNN')
 
 '''Visually show the training done'''
-plt.plot(history.history[airqo_cnn.metrics[0]], label=airqo_cnn.metrics[0])
-plt.plot(history.history['val_' + airqo_cnn.metrics[0]], label = 'val_' + airqo_cnn.metrics[0])
+train_label = airqo_cnn.metrics[0]
+train_history = history.history[train_label]
+validation_label = 'val_' + airqo_cnn.metrics[0]
+validation_history = history.history[validation_label]
+print(train_history)
+plt.plot(train_history, label=train_label, linewidth=2, markersize=12)
+plt.plot(validation_history, label = validation_label, linewidth=2, markersize=12)
 plt.xlabel('Epoch')
 plt.ylabel('Values')
-plt.ylim([0.5, 1])
-plt.legend(loc='lower right')
+plt.legend(loc='upper right')
+plt.show()
