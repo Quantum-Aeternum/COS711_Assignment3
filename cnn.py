@@ -112,7 +112,7 @@ class CNN:
                 verbose=1, callbacks=[early_stopping]#, best_model]
             )
             #self.model.load_weights('best_model.model')
-            self.model.save_weights('cnn.model')
+            self.model.save_weights('models/cnn.model')
             return history
         return None
 
@@ -165,4 +165,4 @@ plt.legend(loc='upper right')
 plt.show()
 
 '''Load the trained model'''
-airqo_cnn.model.load_weights('cnn.model')
+airqo_cnn.model.load_weights('models/cnn.model')
