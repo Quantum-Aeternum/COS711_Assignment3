@@ -51,7 +51,7 @@ def set_to_list(_set):
 class CNN:
     def __init__(
             self, training_set, training_labels, validation_set, validation_labels,
-            optimiser='adam', loss='mae',
+            optimiser='adam', loss='mae', batch_size = 32,
             metrics=['mae'], epochs=200, activation_func='relu'
     ):
         self.training_set = training_set
@@ -61,6 +61,7 @@ class CNN:
         self.activation_func = activation_func
         self.optimiser = optimiser
         self.loss = loss
+        self.batch_size = batch_size
         self.metrics = metrics
         self.epochs = epochs
         self.model = None
@@ -77,6 +78,7 @@ class CNN:
         self.model.add(layers.Conv2D(32, (6, 4), activation=self.activation_func))
         self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Conv2D(64, (4, 4), activation=self.activation_func))
+        self.model.add(layers.Conv2D(64, (3, 3), activation=self.activation_func))
         self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Conv2D(64, (2, 2), activation=self.activation_func))
 
@@ -104,33 +106,35 @@ class CNN:
             history = self.model.fit(
                 self.training_set,
                 self.training_labels,
+                batch_size=self.batch_size,
                 epochs=self.epochs,
                 validation_data=(self.validation_set, self.validation_labels),
                 verbose=1, callbacks=[early_stopping]#, best_model]
             )
             #self.model.load_weights('best_model.model')
+            self.model.save_weights('cnn.model')
             return history
         return None
 
 
 '''Load data sets created by data_prep.py'''
-#raw_training_set = pd.read_csv('training_set.csv')
+raw_training_set = pd.read_csv('training_set.csv')
 raw_training_labels = pd.read_csv('training_labels.csv')
-#raw_validation_set = pd.read_csv('validation_set.csv')
+raw_validation_set = pd.read_csv('validation_set.csv')
 raw_validation_labels = pd.read_csv('validation_labels.csv')
 print('Loaded data sets')
 
 '''Transform data sets into CNN usable data sets'''
-#training_set = set_to_list(raw_training_set)
-#validation_set = set_to_list(raw_validation_set)
-#print('Created "image" data sets')
+training_set = set_to_list(raw_training_set)
+validation_set = set_to_list(raw_validation_set)
+print('Created "image" data sets')
 
 '''Save the data sets'''
-#with open('training_set.list', 'wb') as fp:
-#    pickle.dump(training_set, fp)
-#with open('validation_set.list', 'wb') as fp:
-#    pickle.dump(validation_set, fp)
-#print('Saved data')
+with open('training_set.list', 'wb') as fp:
+    pickle.dump(training_set, fp)
+with open('validation_set.list', 'wb') as fp:
+    pickle.dump(validation_set, fp)
+print('Saved data')
 
 '''Load data set previously created by the code above'''
 print('Loading data')
@@ -156,10 +160,12 @@ train_label = airqo_cnn.metrics[0]
 train_history = history.history[train_label]
 validation_label = 'val_' + airqo_cnn.metrics[0]
 validation_history = history.history[validation_label]
-print(train_history)
 plt.plot(train_history, label=train_label, linewidth=2, markersize=12)
 plt.plot(validation_history, label = validation_label, linewidth=2, markersize=12)
 plt.xlabel('Epoch')
 plt.ylabel('Values')
 plt.legend(loc='upper right')
 plt.show()
+
+'''Load the trained model'''
+airqo_cnn.model.load_weights('cnn.model')

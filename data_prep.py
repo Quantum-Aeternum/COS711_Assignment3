@@ -46,6 +46,7 @@ def remove_nan(_set):
     _cleaned_set = _set.copy()
     _col_names = ['temp', 'precip', 'rel_humidity', 'wind_dir', 'wind_spd', 'atmos_press']
     for index, row in _cleaned_set.iterrows():
+        print('Cleaning progress: ' + str(index) + '/' + str(len(_cleaned_set)))
         for i in range(len(_col_names)):
             success = remove_nan_col(row, _col_names[i])
             if success:
@@ -88,8 +89,10 @@ def flatten_data(_set):
 def normalise_data(_training_set, _validation_set):
     train_stats = _training_set.describe()    
     train_stats = train_stats.transpose()
-    _training_set = (_training_set - train_stats['min']) / (train_stats['max'] - train_stats['min'])
-    _validation_set = (_validation_set - train_stats['min']) / (train_stats['max'] - train_stats['min'])
+    #_training_set = (_training_set - train_stats['min']) / (train_stats['max'] - train_stats['min'])
+    #_validation_set = (_validation_set - train_stats['min']) / (train_stats['max'] - train_stats['min'])
+    _training_set = (_training_set - train_stats['mean']) / train_stats['std']
+    _validation_set = (_validation_set - train_stats['mean']) / train_stats['std']
     return _training_set, _validation_set
 
 
