@@ -118,23 +118,23 @@ class CNN:
 
 
 '''Load data sets created by data_prep.py'''
-raw_training_set = pd.read_csv('training_set.csv')
+#raw_training_set = pd.read_csv('training_set.csv')
 raw_training_labels = pd.read_csv('training_labels.csv')
-raw_validation_set = pd.read_csv('validation_set.csv')
+#raw_validation_set = pd.read_csv('validation_set.csv')
 raw_validation_labels = pd.read_csv('validation_labels.csv')
 print('Loaded data sets')
 
 '''Transform data sets into CNN usable data sets'''
-training_set = set_to_list(raw_training_set)
-validation_set = set_to_list(raw_validation_set)
-print('Created "image" data sets')
+#training_set = set_to_list(raw_training_set)
+#validation_set = set_to_list(raw_validation_set)
+#print('Created "image" data sets')
 
 '''Save the data sets'''
-with open('training_set.list', 'wb') as fp:
-    pickle.dump(training_set, fp)
-with open('validation_set.list', 'wb') as fp:
-    pickle.dump(validation_set, fp)
-print('Saved data')
+#with open('training_set.list', 'wb') as fp:
+#    pickle.dump(training_set, fp)
+#with open('validation_set.list', 'wb') as fp:
+#    pickle.dump(validation_set, fp)
+#print('Saved data')
 
 '''Load data set previously created by the code above'''
 print('Loading data')
@@ -143,9 +143,6 @@ with open("training_set.list", "rb") as fp:
 with open("validation_set.list", "rb") as fp:
     validation_set = np.array(pickle.load(fp))
 print('Loaded data')
-
-print(training_set.shape)
-print(raw_training_labels.to_numpy().shape)
 
 '''Create and train the CNN'''
 airqo_cnn = CNN(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
