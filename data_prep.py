@@ -50,7 +50,7 @@ def remove_nan(_set):
         for i in range(len(_col_names)):
             success = remove_nan_col(row, _col_names[i])
             if success:
-                _cleaned_set.loc[index, _col_names[i]] = row[_col_names[i]]
+                _cleaned_set.location[index, _col_names[i]] = row[_col_names[i]]
             else:
                 _cleaned_set.drop(_cleaned_set[_cleaned_set['ID'] == row['ID']].index, inplace=True)
                 continue
@@ -97,11 +97,11 @@ def normalise_data(_training_set, _validation_set):
 
 
 '''Load training data'''
-raw_data = pd.read_csv('Train.csv')
+raw_data = pd.read_csv('data/Train.csv')
 print('Loaded training data')
 
 '''Load meta data'''
-meta_data = pd.read_csv('airqo_metadata.csv', index_col=0)
+meta_data = pd.read_csv('data/airqo_metadata.csv', index_col=0)
 print('Loaded meta data')
 
 '''Put default values in for NaN (based on minimum requirement for the NaN)'''
@@ -124,10 +124,10 @@ combined_data = pd.merge(no_nan_data, meta_data, on='location')
 combined_data.pop('location')
 print('Combined data with meta data')
 
-combined_data.to_csv(r'preprocessed_data.csv', index=False)
+combined_data.to_csv(r'data/preprocessed_data.csv', index=False)
 
 '''Load data set previously created by the code above'''
-combined_data = pd.read_csv('preprocessed_data.csv')
+combined_data = pd.read_csv('data/preprocessed_data.csv')
 combined_data.drop('ID', axis = 1, inplace = True)
 print('Loaded preprocessead data')
 
@@ -141,8 +141,8 @@ training_set, validation_set = normalise_data(training_set, validation_set)
 print('Normalised data sets')
 
 '''Save all four data sets'''
-training_set.to_csv(r'training_set.csv', index=False)
-training_labels.to_csv(r'training_labels.csv', index=False)
-validation_set.to_csv(r'validation_set.csv', index=False)
-validation_labels.to_csv(r'validation_labels.csv', index=False)
+training_set.to_csv(r'data/training_set.csv', index=False)
+training_labels.to_csv(r'data/training_labels.csv', index=False)
+validation_set.to_csv(r'data/validation_set.csv', index=False)
+validation_labels.to_csv(r'data/validation_labels.csv', index=False)
 print('Saved data sets')

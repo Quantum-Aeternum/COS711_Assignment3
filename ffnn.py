@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import pickle
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, models
+import keras
+from keras import layers
+from keras import callbacks
 
 '''Global variables and parameters'''
 GLOBAL_SEED = 27182818
@@ -29,7 +28,10 @@ class FFNN:
         self.activation_func = activation_func
         self.loss_func = loss_func
         self.metrics = metrics 
+
         self.model = None
+        self.build_model()
+        self.compile_model()
 
     def compile_model(self):
         self.model.compile(
@@ -50,7 +52,8 @@ class FFNN:
         ])
 
     def train_model(self):
-        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=self.epochs//20, verbose=0, mode='auto')
+        early_stopping = callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=self.epochs//20, verbose=0, mode='auto')
+        best_model = callbacks.ModelCheckpoint(filepath='models/ffnn.model', monitor='val_loss', save_best_only=True)
         if self.model is not None:
             history = self.model.fit(
                 self.training_set,
@@ -58,17 +61,17 @@ class FFNN:
                 batch_size=self.batch_size,
                 epochs=self.epochs,
                 validation_data=(self.validation_set, self.validation_labels),
-                verbose=1, callbacks=[early_stopping]
+                verbose=1, callbacks=[early_stopping, best_model]
             )
-            self.model.save_weights('models/ffnn.model')
+            self.model.load_weights('models/ffnn.model')
             return history
         return None
 
         
-training_set = pd.read_csv('training_set.csv')
-training_labels = pd.read_csv('training_labels.csv')
-validation_set = pd.read_csv('validation_set.csv')
-validation_labels = pd.read_csv('validation_labels.csv')
+training_set = pd.read_csv('data/training_set.csv')
+training_labels = pd.read_csv('data/training_labels.csv')
+validation_set = pd.read_csv('data/validation_set.csv')
+validation_labels = pd.read_csv('data/validation_labels.csv')
 print('Loaded data sets')
         
 training_set = training_set.to_numpy()
@@ -78,8 +81,6 @@ validation_labels = validation_labels.to_numpy()
 print('Converted data sets')
 
 airqo_ffnn = FFNN(training_set, training_labels, validation_set, validation_labels)
-airqo_ffnn.build_model()
-airqo_ffnn.compile_model()
 print('Created FFNN')
 history = airqo_ffnn.train_model()
 print('Trained FFNN')

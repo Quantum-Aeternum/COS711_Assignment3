@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, models
+from keras import layers, models
+from keras import callbacks
 
 '''Global variables and parameters'''
 GLOBAL_SEED = 27182818
@@ -51,7 +50,7 @@ def set_to_list(_set):
 class CNN:
     def __init__(
             self, training_set, training_labels, validation_set, validation_labels,
-            optimiser='adam', loss='mae', batch_size = 32,
+            optimiser='adam', loss='mae', batch_size=32,
             metrics=['mae'], epochs=200, activation_func='relu'
     ):
         self.training_set = training_set
@@ -64,7 +63,10 @@ class CNN:
         self.batch_size = batch_size
         self.metrics = metrics
         self.epochs = epochs
+
         self.model = None
+        self.build_architecture()
+        self.compile_model()
 
     # Builds the architecture of the CNN model
     def build_architecture(self):
@@ -74,7 +76,7 @@ class CNN:
         width = len(self.training_set[0][0])
 
         '''Add the convolutional base of the network'''
-        self.model.add(tf.keras.layers.ZeroPadding2D(padding=(6, 4), input_shape=(height, width, 1)))
+        self.model.add(layers.ZeroPadding2D(padding=(6, 4), input_shape=(height, width, 1)))
         self.model.add(layers.Conv2D(32, (6, 4), activation=self.activation_func))
         self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Conv2D(64, (4, 4), activation=self.activation_func))
@@ -100,8 +102,9 @@ class CNN:
     # Trains the model of the CNN if it exists
     # Returns the training history (or None if model does not exist)
     def train_model(self):
-        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=self.epochs//20, verbose=0, mode='auto')
-        #best_model = keras.callbacks.ModelCheck(filepath='best_model.model', monitor='val_loss', save_best_only=True)
+        early_stopping = callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=self.epochs // 20,
+                                                 verbose=0, mode='auto')
+        best_model = callbacks.ModelCheckpoint(filepath='models/cnn.model', monitor='val_loss', save_best_only=True)
         if self.model is not None:
             history = self.model.fit(
                 self.training_set,
@@ -109,45 +112,42 @@ class CNN:
                 batch_size=self.batch_size,
                 epochs=self.epochs,
                 validation_data=(self.validation_set, self.validation_labels),
-                verbose=1, callbacks=[early_stopping]#, best_model]
+                verbose=1, callbacks=[early_stopping, best_model]
             )
-            #self.model.load_weights('best_model.model')
-            self.model.save_weights('models/cnn.model')
+            self.model.load_weights('models/cnn.model')
             return history
         return None
 
 
 '''Load data sets created by data_prep.py'''
-#raw_training_set = pd.read_csv('training_set.csv')
-raw_training_labels = pd.read_csv('training_labels.csv')
-#raw_validation_set = pd.read_csv('validation_set.csv')
-raw_validation_labels = pd.read_csv('validation_labels.csv')
+# raw_training_set = pd.read_csv('data/training_set.csv')
+raw_training_labels = pd.read_csv('data/training_labels.csv')
+# raw_validation_set = pd.read_csv('data/validation_set.csv')
+raw_validation_labels = pd.read_csv('data/validation_labels.csv')
 print('Loaded data sets')
 
 '''Transform data sets into CNN usable data sets'''
-#training_set = set_to_list(raw_training_set)
-#validation_set = set_to_list(raw_validation_set)
-#print('Created "image" data sets')
+# training_set = set_to_list(raw_training_set)
+# validation_set = set_to_list(raw_validation_set)
+# print('Created "image" data sets')
 
 '''Save the data sets'''
-#with open('training_set.list', 'wb') as fp:
+# with open('data/training_set.list', 'wb') as fp:
 #    pickle.dump(training_set, fp)
-#with open('validation_set.list', 'wb') as fp:
+# with open('data/validation_set.list', 'wb') as fp:
 #    pickle.dump(validation_set, fp)
-#print('Saved data')
+# print('Saved data')
 
 '''Load data set previously created by the code above'''
 print('Loading data')
-with open("training_set.list", "rb") as fp:
+with open("data/training_set.list", "rb") as fp:
     training_set = np.array(pickle.load(fp))
-with open("validation_set.list", "rb") as fp:
+with open("data/validation_set.list", "rb") as fp:
     validation_set = np.array(pickle.load(fp))
 print('Loaded data')
 
 '''Create and train the CNN'''
 airqo_cnn = CNN(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
-airqo_cnn.build_architecture()
-airqo_cnn.compile_model()
 print('Created CNN')
 history = airqo_cnn.train_model()
 print('Trained CNN')
@@ -155,14 +155,11 @@ print('Trained CNN')
 '''Visually show the training done'''
 train_label = airqo_cnn.metrics[0]
 train_history = history.history[train_label]
-validation_label = 'val_' + airqo_cnn.metrics[0]
+validation_label = 'val_' + train_label
 validation_history = history.history[validation_label]
 plt.plot(train_history, label=train_label, linewidth=2, markersize=12)
-plt.plot(validation_history, label = validation_label, linewidth=2, markersize=12)
+plt.plot(validation_history, label=validation_label, linewidth=2, markersize=12)
 plt.xlabel('Epoch')
 plt.ylabel('Values')
 plt.legend(loc='upper right')
 plt.show()
-
-'''Load the trained model'''
-airqo_cnn.model.load_weights('models/cnn.model')
