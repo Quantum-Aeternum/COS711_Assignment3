@@ -50,8 +50,8 @@ def set_to_list(_set):
 class CNN:
     def __init__(
             self, training_set, training_labels, validation_set, validation_labels,
-            optimiser='adam', loss='mae', batch_size=32,
-            metrics=['mae'], epochs=200, activation_func='relu'
+            optimiser='adam', loss='mae', batch_size=32, metrics=['mae'], epochs=200, 
+            activation_func='relu'
     ):
         self.training_set = training_set
         self.training_labels = training_labels

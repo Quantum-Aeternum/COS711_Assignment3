@@ -14,8 +14,8 @@ np.random.seed(GLOBAL_SEED)
 
 class FFNN:
     def __init__(self, training_set, training_labels, validation_set, validation_labels,
-            optimiser='adam', epochs=200, batch_size=32, architecture_scaler=2, 
-            activation_func='relu', loss_func='mae', metrics=['mae']
+            optimiser='adam', epochs=200, batch_size=32, activation_func='relu', loss_func='mae', 
+            metrics=['mae']
         ):
         self.training_set = training_set
         self.training_labels = training_labels 
@@ -24,7 +24,6 @@ class FFNN:
         self.optimiser = optimiser
         self.epochs = epochs 
         self.batch_size = batch_size
-        self.architecture_scaler = architecture_scaler 
         self.activation_func = activation_func
         self.loss_func = loss_func
         self.metrics = metrics 
