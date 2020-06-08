@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pickle
 from keras import layers, models
 from keras import callbacks
+import time
 
 '''Global variables and parameters'''
 GLOBAL_SEED = 27182818
@@ -147,10 +148,36 @@ with open("data/validation_set.list", "rb") as fp:
 print('Loaded data')
 
 '''Create and train the CNN'''
-airqo_cnn = CNN(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
-print('Created CNN')
-history = airqo_cnn.train_model()
-print('Trained CNN')
+losses = []
+val_losses = []
+times = []
+for i in range(20):   
+    print(str(i + 1), '/20') 
+    airqo_cnn = CNN(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
+    print('Created CNN')
+    tic = time.perf_counter()
+    history = airqo_cnn.train_model()
+    toc = time.perf_counter()
+    elapsed = toc - tic
+    times.append(elapsed)
+    val_loss_min = min(history.history['val_loss'])
+    index = history.history['val_loss'].index(val_loss_min)
+    losses.append(history.history['loss'][index])
+    val_losses.append(val_loss_min)
+    print('Trained CNN')
+times = np.array(times)
+losses = np.array(losses)
+val_losses = np.array(val_losses)
+print('Avg Training Time')
+print(np.mean(times))
+print('Avg Loss')
+print(np.mean(losses))
+print('Loss Stdev')
+print(np.std(losses))
+print('Avg Val Loss')
+print(np.mean(val_losses))
+print('Val Stdev')
+print(np.std(val_losses))
 
 '''Visually show the training done'''
 train_label = airqo_cnn.metrics[0]

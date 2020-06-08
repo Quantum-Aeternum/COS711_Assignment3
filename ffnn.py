@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import keras
 from keras import layers
 from keras import callbacks
+import time
 
 '''Global variables and parameters'''
 GLOBAL_SEED = 27182818
@@ -79,10 +80,36 @@ validation_set = validation_set.to_numpy()
 validation_labels = validation_labels.to_numpy()
 print('Converted data sets')
 
-airqo_ffnn = FFNN(training_set, training_labels, validation_set, validation_labels)
-print('Created FFNN')
-history = airqo_ffnn.train_model()
-print('Trained FFNN')
+losses = []
+val_losses = []
+times = []
+for i in range(20):    
+    print(str(i + 1), '/20')
+    airqo_ffnn = FFNN(training_set, training_labels, validation_set, validation_labels)
+    print('Created FFNN')
+    tic = time.perf_counter()
+    history = airqo_ffnn.train_model()
+    toc = time.perf_counter()
+    elapsed = toc - tic
+    times.append(elapsed)
+    val_loss_min = min(history.history['val_loss'])
+    index = history.history['val_loss'].index(val_loss_min)
+    losses.append(history.history['loss'][index])
+    val_losses.append(val_loss_min)
+    print('Trained FFNN')
+times = np.array(times)
+losses = np.array(losses)
+val_losses = np.array(val_losses)
+print('Avg Training Time')
+print(np.mean(times))
+print('Avg Loss')
+print(np.mean(losses))
+print('Loss Stdev')
+print(np.std(losses))
+print('Avg Val Loss')
+print(np.mean(val_losses))
+print('Val Stdev')
+print(np.std(val_losses))
 
 train_label = airqo_ffnn.metrics[0]
 train_history = history.history[train_label]

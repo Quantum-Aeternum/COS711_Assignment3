@@ -5,6 +5,7 @@ import pickle
 import tensorflow as tf
 from keras import layers, models
 from keras import callbacks
+import time
 
 '''Global variables and parameters'''
 GLOBAL_SEED = 27182818
@@ -126,10 +127,36 @@ with open("data/lstm_validation_set.list", "rb") as fp:
 print('Loaded data')
 
 '''Create and train the LSTM'''
-airqo_lstm = LSTM(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
-print('Created LSTM')
-history = airqo_lstm.train_model()
-print('Trained LSTM')
+losses = []
+val_losses = []
+times = []
+for i in range(5):
+    print(str(i + 1), '/5')
+    airqo_lstm = LSTM(training_set, raw_training_labels.to_numpy(), validation_set, raw_validation_labels.to_numpy())
+    print('Created LSTM')
+    tic = time.perf_counter()
+    history = airqo_lstm.train_model()
+    toc = time.perf_counter()
+    elapsed = toc - tic
+    times.append(elapsed)
+    val_loss_min = min(history.history['val_loss'])
+    index = history.history['val_loss'].index(val_loss_min)
+    losses.append(history.history['loss'][index])
+    val_losses.append(val_loss_min)
+    print('Trained LSTM')
+times = np.array(times)
+losses = np.array(losses)
+val_losses = np.array(val_losses)
+print('Avg Training Time')
+print(np.mean(times))
+print('Avg Loss')
+print(np.mean(losses))
+print('Loss Stdev')
+print(np.std(losses))
+print('Avg Val Loss')
+print(np.mean(val_losses))
+print('Val Stdev')
+print(np.std(val_losses))
 
 '''Visually show the training done'''
 train_label = airqo_lstm.metrics[0]
